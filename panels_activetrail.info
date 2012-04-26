@@ -1,0 +1,6 @@
+name = Panels Active Trail
+description = Adds the ability to set breadcrumbs directly from Panels and takes advantage of arguments and contexts as placeholder tokens
+core = 7.x
+dependencies[] = ctools
+dependencies[] = page_manager
+dependencies[] = panels

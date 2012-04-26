@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * This module is heavily based off of "Panels Everywhere", and inspired by
+ * Itangalo's tentative project "Page Manager Breadcrumbs".
+ */
+
+/**
+ * Implements hook_page_manager_variant_operations_alter().
+ *
+ * Shameful rip off from panels_everywhere module.
+ *
+ * @see panels_everywhere_page_manager_variant_operations_alter()
+ * @see http://groups.drupal.org/node/110719#comment-356094
+ */
+function panels_activetrail_page_manager_variant_operations_alter(&$operations, $handler) {
+
+  // Use this obnoxious construct to safely insert our item.
+  reset($operations['children']);
+  $children_operations = array();
+  while (list($key, $value) = each($operations['children'])) {
+    $children_operations[$key] = $value;
+    if ($key == 'context') {
+      $children_operations['activetrail'] = array(
+        'title' => t('Active trail'),
+        'description' => t('Edit Active trail.'),
+        'form' => 'panels_activetrail_variant_activetrail_form',
+      );
+    }
+  }
+  $operations['children'] = $children_operations;
+}
+
+/**
+ * Panels breadcrumbs form.
+ */
+function panels_activetrail_variant_activetrail_form($form, &$form_state) {
+
+  ctools_include('context-task-handler');
+
+  $handler = &$form_state['handler'];
+
+  $options = menu_parent_options(menu_get_menus(), array('mlid' => 0));
+
+  if (empty($handler->conf['panels_activetrail_state'])) {
+    $handler->conf['panels_activetrail_state'] = '0';
+  }
+
+  if (empty($handler->conf['panels_activetrail_mlid'])) {
+    $handler->conf['panels_activetrail_mlid'] = 0;
+  }
+
+  $form['settings']['panels_activetrail_state'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable Active trail for this Variant'),
+      '#default_value' => $handler->conf['panels_activetrail_state'],
+  );
+  $form['settings']['panels_activetrail_mlid'] = array(
+    '#type' => 'select',
+    '#title' => t('Parent item'),
+    '#default_value' => $handler->conf['panels_activetrail_mlid'],
+    '#options' => $options,
+    '#attributes' => array('class' => array('menu-parent-select')),
+  );
+
+  return $form;
+}
+
+/**
+ * Handles Panels breadcrumbs form submission.
+ */
+function panels_activetrail_variant_activetrail_form_submit($form, &$form_state) {
+  $form_state['handler']->conf['panels_activetrail_state'] = $form_state['values']['panels_activetrail_state'];
+  $form_state['handler']->conf['panels_activetrail_mlid'] = $form_state['values']['panels_activetrail_mlid'];
+}
+
+/**
+ * Implements hook_ctools_render_alter().
+ *
+ * When a Page Manager page is rendered, set the breadcrumb
+ */
+function panels_activetrail_ctools_render_alter($info, $page, $context) {
+
+  $conf = $context['handler']->conf;
+
+  // If panels_activetrail isn't enabled for this display, bail out.
+  if (!isset($conf['panels_activetrail_state']) || !$conf['panels_activetrail_state']) {
+    return;
+  }
+
+  // If no titles or paths are defined, also bail out.
+  if (!isset($conf['panels_activetrail_mlid'])) {
+    return;
+  }
+
+  list($menu_name, $mlid) = split(':', $conf['panels_activetrail_mlid']);
+  $item = menu_link_load($mlid);
+  if ($item) {
+    menu_tree_set_path($item['menu_name'], $item['link_path']);
+  }
+}

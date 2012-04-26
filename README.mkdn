@@ -1,0 +1,8 @@
+Panels Active trail module
+==========================
+
+by Benjamin Doherty, bangpound
+
+Panels Active trail allows you to set an active trail directly from Panels variant configuration.
+
+This module is based on [Panels Breadcrumb](http://drupal.org/project/panels_breadcrumbs) which is based on [Panels Everywhere](http://drupal.org/project/panels_everywhere).
