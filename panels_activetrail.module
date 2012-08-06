@@ -94,7 +94,7 @@ function panels_activetrail_ctools_render_alter($info, $page, $context) {
     return;
   }
 
-  list($menu_name, $mlid) = split(':', $conf['panels_activetrail_mlid']);
+  list($menu_name, $mlid) = explode(':', $conf['panels_activetrail_mlid']);
   $item = menu_link_load($mlid);
   if ($item) {
     menu_tree_set_path($item['menu_name'], $item['link_path']);
